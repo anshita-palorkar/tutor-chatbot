@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Chatbot Tutor</title>
+    <link rel="stylesheet" href="https://unpkg.com/nes.css/css/nes.min.css">
+    <style>
+        body {
+            font-family: monospace;
+            background-color: #f5f5f5;
+        }
+        #conversation {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #input-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto;
+            width: 650px;
+        }
+
+        #user-input-form {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto;
+            width: 650px;
+        }
+
+        #user-input {
+            width: 650px;
+            margin: 0 auto;
+        }
+
+        .nes-balloon {
+            display: inline-block;
+            max-width: 600px;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            margin-bottom: 10px;
+        }
+        .chatbot-message {
+            align-self: flex-start;
+            margin-bottom: 10px;
+        }
+        .user-message .nes-balloon from-right {
+            border-color: #2ECC40;
+        }
+        .user-message .nes-balloon.from-right:before {
+            border-right-color: #2ECC40;
+        }
+        .chatbot-message .nes-balloon.from-left {
+            border-color: #FF4136;
+        }
+        .chatbot-message .nes-balloon.from-left:before {
+            border-left-color: #FF4136;
+        }
+        .animate {
+          animation-duration: 1s;
+          animation-fill-mode: both;
+          animation-iteration-count: infinite;
+        }
+
+        .octocat-left {
+          position:relative;
+          top: 80%;
+          float: left;
+          margin-right: 10px; /* add some margin to separate the icon from the balloon */
+        }
+
+        .charmander-right {
+          position: relative;
+          top: 20%;
+          float:  right;
+          margin-left: 10px; /* add some margin to separate the icon from the balloon */
+        }
+
+    </style>
+  </head>
+  <body>
+    <h1><center>Welcome to the ML tutor chatbot!</center></h1>
+    <div id="conversation">
+      <!-- START: Loading icon html -->
+      <div id="loadingIcon" style="display: none;">
+        <img src="https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/ac8288c5-f7c6-4250-9612-5b7cbc6ae7e9/dae9eku-bfaf362e-71be-4e75-9c94-477b876c5373.gif?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcL2FjODI4OGM1LWY3YzYtNDI1MC05NjEyLTViN2NiYzZhZTdlOVwvZGFlOWVrdS1iZmFmMzYyZS03MWJlLTRlNzUtOWM5NC00NzdiODc2YzUzNzMuZ2lmIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.qckJWdbKnLxE_txEHprjJ8CXTXXsXHP7v7dJcVhVOpc" alt="Loading..." width="80" height="80">
+      </div>
+      <!-- END -->
+    </div>
+    <div id="input-container">
+    <form id="user-input-form">
+      <div class="nes-field">
+      <input type="text" id="user-input" class="nes-input">
+      </div>
+      <div class="nes-field">
+      <input type="submit" value="Send" class="nes-input">
+      </div>
+    </form>
+    </div>
+    <script>
+      const conversation = document.getElementById("conversation");
+      const userInputForm = document.getElementById("user-input-form");
+      const userInput = document.getElementById("user-input");
+
+      // START: Loading icon and helper functions to show / hide
+      const loadingIcon = document.getElementById("loadingIcon");
+      function showElement(elem, displayStyle) {
+        if(elem) {
+          elem.style.display = displayStyle || "inline";
+        }
+      }
+
+      function hideElement(elem) {
+        if(elem) {
+          elem.style.display = "none";
+        }
+      }
+      // END: Loading icon and helper functions to show / hide
+      
+      // Helper function to append a message to the conversation div
+      function appendMessage(role, message, className, callback) {
+        const messageDiv = document.createElement("div");
+        messageDiv.classList.add(className);
+        const balloonDiv = document.createElement("div");
+        balloonDiv.classList.add("nes-balloon");
+        balloonDiv.classList.add(`from-${role === "You" ? "right" : "left"}`);
+        messageDiv.appendChild(balloonDiv);
+
+        if (role === "Chatbot") {
+          const octocatIcon = document.createElement("i");
+          octocatIcon.classList.add("nes-octocat", "animate", "octocat-left");
+          messageDiv.appendChild(octocatIcon);
+
+          const messageLength = message.length;
+          let i = 0;
+          const typingInterval = setInterval(() => {
+            if (i < messageLength) {
+              balloonDiv.textContent += message.charAt(i);
+              i++;
+            } else {
+              clearInterval(typingInterval);
+              if (callback) {
+                callback();
+              }
+            }
+          }, 10);
+
+        } else {
+          balloonDiv.textContent = message;
+          const charmanderIcon = document.createElement("i");
+          charmanderIcon.classList.add("nes-charmander", "animate", "charmander-right");
+          messageDiv.appendChild(charmanderIcon);
+          if (callback) {
+            callback();
+          }
+        }
+
+        conversation.appendChild(messageDiv);
+        conversation.scrollTop = conversation.scrollHeight;
+      }
+
+
+      // Helper function to handle the chatbot's response
+      function handleResponse(response) {
+        // START: This may not be needed if the loading icon code works
+        // const bufferingDiv = document.createElement("div");
+        // bufferingDiv.innerHTML = `<img src="https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/ac8288c5-f7c6-4250-9612-5b7cbc6ae7e9/dae9eku-bfaf362e-71be-4e75-9c94-477b876c5373.gif?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcL2FjODI4OGM1LWY3YzYtNDI1MC05NjEyLTViN2NiYzZhZTdlOVwvZGFlOWVrdS1iZmFmMzYyZS03MWJlLTRlNzUtOWM5NC00NzdiODc2YzUzNzMuZ2lmIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.qckJWdbKnLxE_txEHprjJ8CXTXXsXHP7v7dJcVhVOpc" alt="Loading..." width="80" height="80">`;
+        // bufferingDiv.style.margin = "auto";
+        // conversation.appendChild(bufferingDiv);
+        hideElement(loadingIcon);
+        // END
+
+        if (response.feedback) {
+            appendMessage("Chatbot", response.feedback, "chatbot-message", () => {
+            if (response.status) {
+                appendMessage("Chatbot", response.status, "chatbot-message", () => {
+                  appendMessage("Chatbot", response.message, "chatbot-message", () => {
+                    userInput.value = "";
+                    userInput.focus();
+                    if (response.followup_question) {
+                        appendMessage("Chatbot", response.followup_question, "chatbot-message");
+                      }
+                  });
+                });
+              }
+            });
+          }
+          else {
+            appendMessage("Chatbot", response.message, "chatbot-message", () => {
+                    userInput.value = "";
+                    userInput.focus();
+                    if (response.followup_question) {
+                        appendMessage("Chatbot", response.followup_question, "chatbot-message");
+                      }
+                  });
+          }
+      }
+
+      // Add event listener to form submission
+      userInputForm.addEventListener("submit", function(e) {
+        e.preventDefault();
+        const userMessage = userInput.value;
+        const followupQuestion = document.querySelector("#conversation div:last-child").textContent.trim();
+        appendMessage("You", userMessage, "user-message");
+        // START: show loading icon
+        showElement(loadingIcon);
+        // END: show loading icon
+        fetch("/response", {
+          method: "POST",
+          body: JSON.stringify({ answer: userMessage, followup_question: followupQuestion }),
+          headers: {
+            "Content-Type": "application/json"
+          }
+        })
+        .then(response => response.json())
+        .then(handleResponse)
+        .catch(error => console.error(error));
+      });
+      
+      // Start conversation with chatbot
+      appendMessage("Chatbot", "Well, well, well, look who we got here. It's your friendly neighborhood ML tutor, but don't be fooled by the fancy words and the polite greeting. I speak in the style of a mafia lord from the roaring 20s, so you better watch your step around here. Now, let's get down to business and start talking some serious machine learning.", "chatbot-message");
+      
+      const messageInterval = setInterval(() => {
+      const lastMessage = conversation.lastChild;
+      if (lastMessage.classList.contains("chatbot-message") && lastMessage.textContent === "Well, well, well, look who we got here. It's your friendly neighborhood ML tutor, but don't be fooled by the fancy words and the polite greeting. I speak in the style of a mafia lord from the roaring 20s, so you better watch your step around here. Now, let's get down to business and start talking some serious machine learning.") {
+        clearInterval(messageInterval);
+        appendMessage("Chatbot", "Alright, let's cut to the chase. First subtopic — Introduction to Machine Learning!", "chatbot-message");
+      }
+      }, 1000);
+
+      // START: show loading icon
+      showElement(loadingIcon);
+      // END: show loading icon
+
+      fetch("/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        }
+      })
+      .then(response => response.json())
+      .then(handleResponse)
+      .catch(error => console.error(error));
+    </script>
+  </body>
+</html>
